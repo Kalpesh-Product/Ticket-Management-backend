@@ -20,6 +20,7 @@ const ticketSchema = new mongoose.Schema(
     status: { type: String, default: "Pending" }, // This sets the default value of status to "Pending"
     assignedMember: { type: String, default: "No Available Member" },
     memberAcceptedStatus: { type: String, default: "Not Accepted" },
+    memberAcceptedDate: { type: String, default: "-" },
     memberAcceptedTime: { type: String, default: "-" },
     memberStatus: { type: String, default: "In Progress" },
     memberTimeRequired: { type: String, default: "-" },

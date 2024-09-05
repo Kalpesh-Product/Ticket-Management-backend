@@ -110,6 +110,36 @@ app.get("/get-all-tickets", async (req, res) => {
   }
 });
 
+// Get today's tickets
+app.get("/get-todays-tickets", async (req, res) => {
+  try {
+    // Get the current date in the desired format (e.g., 'YYYY-MM-DD')
+    const today = new Date().toISOString().split("T")[0];
+
+    // Find all tickets where the date matches today's date
+    const todaysTickets = await Ticket.find({ date: today });
+
+    // Respond with the filtered tickets for today
+    res.json({ tickets: todaysTickets });
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(400);
+  }
+});
+
+app.get("/get-all-tickets-sorted", async (req, res) => {
+  try {
+    // find all ticket objects from the db and sort them by createdAt in descending order
+    const listOfAllTickets = await Ticket.find().sort({ createdAt: -1 });
+
+    // respond with the ticket array containing ticket objects sorted by latest
+    res.json({ tickets: listOfAllTickets });
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(400);
+  }
+});
+
 // View users tickets (for user)
 app.get("/get-all-tickets/:email", async (req, res) => {
   try {
@@ -496,28 +526,60 @@ app.get("/get-member-accepted-tickets/:email", async (req, res) => {
   }
 });
 
+// // Member accepts ticket
+// app.put("/member-accept-ticket/:id", async (req, res) => {
+//   try {
+//     // Get the id off the url
+//     const ticketIdFromTheUrl = req.params.id;
+
+//     // Get the data off the req body
+//     // const titleFromRequestBody = req.body.title;
+//     // const bodyFromRequestBody = req.body.body;
+
+//     // Find and update the record
+//     await Ticket.findOneAndUpdate(
+//       { _id: ticketIdFromTheUrl },
+//       {
+//         memberAcceptedStatus: "Accepted",
+//       }
+//     );
+
+//     //   Find updated ticket (using it's id)
+//     const updatedTicket = await Ticket.findById(ticketIdFromTheUrl);
+
+//     // Respond with the updated ticket (after finding it)
+//     res.json({ ticket: updatedTicket });
+//   } catch (error) {
+//     console.log(error);
+//     res.sendStatus(400);
+//   }
+// });
+
 // Member accepts ticket
 app.put("/member-accept-ticket/:id", async (req, res) => {
   try {
-    // Get the id off the url
+    // Get the id from the URL
     const ticketIdFromTheUrl = req.params.id;
 
-    // Get the data off the req body
-    // const titleFromRequestBody = req.body.title;
-    // const bodyFromRequestBody = req.body.body;
+    // Get the current date and time
+    const currentDateTime = new Date();
+    const memberAcceptedDate = currentDateTime.toLocaleDateString(); // Date in 'MM/DD/YYYY' format
+    const memberAcceptedTime = currentDateTime.toLocaleTimeString(); // Time in 'HH:MM:SS AM/PM' format
 
     // Find and update the record
     await Ticket.findOneAndUpdate(
       { _id: ticketIdFromTheUrl },
       {
         memberAcceptedStatus: "Accepted",
+        memberAcceptedDate: memberAcceptedDate,
+        memberAcceptedTime: memberAcceptedTime,
       }
     );
 
-    //   Find updated ticket (using it's id)
+    // Find the updated ticket
     const updatedTicket = await Ticket.findById(ticketIdFromTheUrl);
 
-    // Respond with the updated ticket (after finding it)
+    // Respond with the updated ticket
     res.json({ ticket: updatedTicket });
   } catch (error) {
     console.log(error);
@@ -1008,6 +1070,33 @@ app.get("/search-by-member/:key", async (req, res) => {
       },
     ],
   });
+  res.send(result);
+});
+
+// API to handle multiple filters
+app.get("/search-tickets", async (req, res) => {
+  let query = {};
+
+  if (req.query.name) {
+    query.userName = { $regex: req.query.name, $options: "i" };
+  }
+  if (req.query.company) {
+    query.userCompany = { $regex: req.query.company, $options: "i" };
+  }
+  if (req.query.department) {
+    query.userDepartment = { $regex: req.query.department, $options: "i" };
+  }
+  if (req.query.member) {
+    query.assignedMember = { $regex: req.query.member, $options: "i" };
+  }
+  if (req.query.date) {
+    query.createdAt = {
+      $gte: new Date(req.query.date).setHours(00, 00, 00),
+      $lt: new Date(req.query.date).setHours(23, 59, 59),
+    };
+  }
+
+  let result = await Ticket.find(query);
   res.send(result);
 });
 
