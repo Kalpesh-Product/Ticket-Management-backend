@@ -687,6 +687,22 @@ app.get("/get-closed-tickets", async (req, res) => {
   }
 });
 
+// View unresolved tickets
+app.get("/get-unresolved-tickets", async (req, res) => {
+  try {
+    // find all ticket objects from the db
+    const listOfAllTickets = await Ticket.find({
+      resolvedStatus: "Unresolved",
+    });
+
+    // respond with the ticket array containing ticket objects
+    res.json({ tickets: listOfAllTickets });
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(400);
+  }
+});
+
 // // update assigned member
 // app.put("/update-assign-member/:id", async (req, res) => {
 //   try {
