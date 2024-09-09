@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+const moment = require("moment-timezone");
+
 // const ticketSchema = new mongoose.Schema({
 //   userName: String,
 //   userEmail: String,
@@ -28,13 +30,25 @@ const ticketSchema = new mongoose.Schema(
     memberMessageToUser: { type: String, default: "-" },
     resolvedStatus: { type: String, default: "-" },
     reasonForDeleting: { type: String, default: "-" },
+    //   date: {
+    //     type: String,
+    //     default: () => new Date().toISOString().split("T")[0],
+    //   },
+    //   time: {
+    //     type: String,
+    //     default: () => new Date().toTimeString().split(":").slice(0, 2).join(":"),
+    //   },
+    //   deletedStatus: { type: String, default: "Not Deleted" },
+    // },
+    // { timestamps: true }
+
     date: {
       type: String,
-      default: () => new Date().toISOString().split("T")[0],
+      default: () => moment().tz("Asia/Kolkata").format("YYYY-MM-DD"), // IST Date
     },
     time: {
       type: String,
-      default: () => new Date().toTimeString().split(":").slice(0, 2).join(":"),
+      default: () => moment().tz("Asia/Kolkata").format("HH:mm"), // IST Time
     },
     deletedStatus: { type: String, default: "Not Deleted" },
   },
