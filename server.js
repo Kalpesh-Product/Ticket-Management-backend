@@ -7,6 +7,7 @@ const Ticket = require("./models/ticketModel"); // importing ticket model (the b
 const Admin = require("./models/adminModel");
 const Member = require("./models/memberModel");
 const User = require("./models/userModel");
+const Message = require("./models/messageModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -1166,6 +1167,124 @@ app.delete("/delete-member/:id", async (req, res) => {
 
     // Respond with a message
     res.json({ success: "Member Deleted" });
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(400);
+  }
+});
+
+app.get("/view-member-availability/:email", async (req, res) => {
+  try {
+    // get email from the url
+    const memberEmailFromTheUrl = req.params.email;
+
+    // find in DB where email from params == email in DB
+    const memberObject = await Member.findOne({
+      email: memberEmailFromTheUrl,
+    });
+
+    // Respond with the member object
+    res.json({ member: memberObject });
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(400);
+  }
+});
+
+// member changes to unavailable
+app.put("/member-changes-to-unavailable/:email", async (req, res) => {
+  try {
+    // Get the email off the url
+    const memberemailFromTheUrl = req.params.email;
+
+    // Get the data from the request body
+    // const assignedMember = req.body.assignedMember;
+
+    // Find the member in the DB & update
+    await Member.findOneAndUpdate(
+      { email: memberemailFromTheUrl },
+      {
+        availability: "Unavailable",
+      }
+    );
+
+    // Find the updated member using the email
+    const updatedMember = await Member.findOne({
+      email: memberemailFromTheUrl,
+    });
+
+    // Respont with updated member
+    res.json({ member: updatedMember });
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(400);
+  }
+});
+
+// member changes to available
+app.put("/member-changes-to-available/:email", async (req, res) => {
+  try {
+    // Get the id off the url
+    const memberemailFromTheUrl = req.params.email;
+
+    // Get the data from the request body
+    // const assignedMember = req.body.assignedMember;
+
+    // Find the member in the DB & update
+    await Member.findOneAndUpdate(
+      { email: memberemailFromTheUrl },
+      {
+        availability: "Available",
+      }
+    );
+
+    // Find the updated member using the ID
+    const updatedMember = await Member.findOne({
+      email: memberemailFromTheUrl,
+    });
+
+    // Respont with updated member
+    res.json({ member: updatedMember });
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(400);
+  }
+});
+
+// POST - Create a new message
+app.post("/create-message", async (req, res) => {
+  try {
+    // Get the sent in data off request body
+    const messageFromRequestBody = req.body.message;
+    const messageDepertmentFromRequestBody = req.body.messageDepertment;
+
+    // Create a message with it (take the values from the request body / frontend and insert in the database)
+    const ourCreatedMessage = await Message.create({
+      message: messageFromRequestBody,
+      messageDepertment: messageDepertmentFromRequestBody,
+      // user: req.user._id,
+    });
+
+    // respond with the new message (this will be our response in messageman / developer tools)
+    res.json({ message: ourCreatedMessage });
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(400);
+  }
+});
+
+app.get("/view-selected-messages/:department", async (req, res) => {
+  try {
+    // get email from the url
+    const departmentNameFromTheUrl = req.params.department;
+
+    // find in DB where email from params == email in DB
+    const messagesArray = await Message.find({
+      messageDepertment: departmentNameFromTheUrl,
+    });
+
+    // Respond with the messages object
+    res.json({ messages: messagesArray });
   } catch (error) {
     console.log(error);
     res.sendStatus(400);
